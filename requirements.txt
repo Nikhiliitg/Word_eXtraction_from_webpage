@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+keybert
+scikit-learn
+playwright
+rake-nltk
+transformers
+faiss-cpu
+nltk
+streamlit
+requests

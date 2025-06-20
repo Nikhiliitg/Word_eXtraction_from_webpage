@@ -1,0 +1,36 @@
+name: 🛠️ CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: 🔧 Build and Run Services
+        run: |
+          docker-compose build
+          docker-compose up -d
+
+      - name: 🚨 Test FastAPI Health
+        run: |
+          sleep 10
+          curl --fail http://localhost:8000/ || exit 1
+
+      - name: 🚨 Test Streamlit UI
+        run: |
+          curl --fail http://localhost:8501/ || exit 1
