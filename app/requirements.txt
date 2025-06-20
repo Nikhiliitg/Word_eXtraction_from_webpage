@@ -9,3 +9,4 @@ faiss-cpu
 nltk
 streamlit
 requests
+beautifulsoup4

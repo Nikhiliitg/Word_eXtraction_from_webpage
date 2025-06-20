@@ -1,14 +1,24 @@
-# Dockerfile.backend
+# Use Python base image
 FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install OS-level deps
+RUN apt-get update && apt-get install -y \
+    wget curl gnupg libnss3 libatk-bridge2.0-0 libgtk-3-0 libxss1 libasound2 \
+    libx11-xcb1 libgbm-dev libxcomposite1 libxdamage1 libxrandr2 libu2f-udev \
+    libxkbcommon0 libpangocairo-1.0-0 libpangoft2-1.0-0 libatspi2.0-0 libcups2 \
+    fonts-liberation && rm -rf /var/lib/apt/lists/*
 
-COPY ./app ./app
+COPY ./app/requirements.txt /app/requirements.txt
 
-RUN playwright install
+# 🚀 Retry installs with network resilience
+RUN pip install --upgrade pip \
+ && pip install --no-cache-dir --default-timeout=100 --retries=10 -r requirements.txt \
+ && python -m playwright install --with-deps
 
-EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN mkdir -p /app/data
+
+COPY ./app /app
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

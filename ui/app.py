@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import time
 import json
+import os
 
 # ------------------- Page Config ------------------- #
 st.set_page_config(page_title="Keyword Extractor", layout="centered")
@@ -9,6 +10,7 @@ st.title("🔍 Internal Site Keyword Extractor")
 
 # ------------------- URL Input ------------------- #
 url = st.text_input("🌐 Enter the URL of the page:")
+BACKEND_HOST = os.getenv("BACKEND_HOST", "backend")
 
 # ------------------- Auto Method Selector ------------------- #
 def auto_pick_method(url: str) -> str:
@@ -43,10 +45,9 @@ if st.button("🚀 Extract Keywords"):
 
             try:
                 response = requests.get(
-                    "http://127.0.0.1:8000/extract_keywords",
-                    params={"url": url, "method": selected_method},
-                    timeout=40  # prevent UI freezing forever
-                )
+                        f"http://{BACKEND_HOST}:8000/extract_keywords",
+                        params={"url": url, "method": selected_method},
+                        timeout=40)
                 response.raise_for_status()
 
                 keywords = response.json().get("keywords", [])

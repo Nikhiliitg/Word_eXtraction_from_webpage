@@ -30,9 +30,13 @@ class VectorStore:
         for kw in keywords:
             self.metadata.append({"keyword": kw, "url": source_url})
 
+        # Ensure directory exists before saving
+        os.makedirs(os.path.dirname(self.index_path), exist_ok=True)
+
         # Save FAISS index to disk
         faiss.write_index(self.index, self.index_path)
         print(f"✅ Saved {len(keywords)} keywords from {source_url} into vector DB")
+
 
     def search_similar(self, query, top_k=5):
         query_vector = self.model.encode([query]).astype("float32")

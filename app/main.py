@@ -2,10 +2,10 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.scraper import Scraper
-from app.processor import TextProcessor
-from app.extractor import KeywordExtractor
-from app.vectorstore import VectorStore  # Assuming this exists
+from scraper import Scraper
+from processor import TextProcessor
+from extractor import KeywordExtractor
+from vectorstore import VectorStore
 
 import traceback
 
