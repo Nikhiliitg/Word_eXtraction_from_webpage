@@ -64,3 +64,12 @@ async def extract_keywords_endpoint(
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"🔥 Internal Error: {str(e)}")
+
+@app.get("/search_similar")
+async def search_index(query: str = Query(..., description="What are you looking for?")):
+    try:
+        # Search FAISS for the most similar keywords/URLs
+        results = vectorstore.search_similar(query, top_k=3)
+        return {"query": query, "matches": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from rake_nltk import Rake
 from transformers import pipeline
 import torch
+import re
 
 
 class KeywordExtractor:
@@ -31,10 +32,32 @@ class KeywordExtractor:
         return vectorizer.get_feature_names_out().tolist()
 
     def extract_llm_keywords(self, text):
+    # Give it a wider window to find more keywords
+    # Skip the first 100 (usually "SpaceX - Wikipedia") and take 1500 chars
+        clean_text = text[100:1600] 
+
         prompt = (
-            "You are a keyword extraction expert. Read the following content and extract 5 to 10 important keywords. "
-            "Return them as a comma-separated list:\n\n"
-            f"{text[:1000]}"  # limit prompt to avoid hitting max token limit
+            "Instructions: List exactly 5 important keywords from the text below. "
+            "Focus on companies, people, and technology. "
+            "Format: keyword1, keyword2, keyword3, keyword4, keyword5. "
+            f"Text: {clean_text}"
         )
-        result = self.llm_model(prompt, max_length=100, min_length=10, do_sample=False)
-        return [kw.strip() for kw in result[0]["generated_text"].split(",")]
+        
+        result = self.llm_model(
+            prompt, 
+            max_new_tokens=100, # Increased to allow more words
+            do_sample=True, 
+            temperature=0.7,     # Add a bit of 'creativity'
+            repetition_penalty=1.5 # Lowered from 3.0 so it's less aggressive
+        )
+        
+        raw_output = result[0]["generated_text"]
+        
+        # Simple split and clean
+        keywords = [k.strip() for k in raw_output.split(',') if len(k.strip()) > 2]
+        
+        # Final filter: Remove generic Wikipedia words
+        junk_words = ["wikipedia", "content", "sidebar", "menu", "article"]
+        final_keywords = [k for k in keywords if k.lower() not in junk_words]
+        
+        return final_keywords[:6]
